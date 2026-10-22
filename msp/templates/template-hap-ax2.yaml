@@ -1,0 +1,77 @@
+# ============================================================
+# Template de conformité YAML pour Mikrotik hAP ax²
+# ============================================================
+name: template-hap-ax2
+model: hAP ax²
+description: Template de conformité pour Mikrotik hAP ax² (WiFi 6)
+
+versions:
+  routeros_min_version: "7.10"
+  routeros_target_version: "7.15.3"
+  firmware_required: true
+
+interfaces:
+  required: [bridge-lan, ether2, ether3, ether4, ether5]
+  wan_interface: ether1
+
+pppoe:
+  required: true
+  route_distance_min: 1
+  route_distance_max: 20
+  check_internet: true
+  check_default_route: true
+
+lte:
+  required: false
+  route_distance: 21
+
+dhcp:
+  required_servers: 1
+  interface: bridge-lan
+
+dns:
+  allow_remote_requests: true
+  required_servers: ["1.1.1.1", "8.8.8.8"]
+  test_domains: [google.com, microsoft.com, webex.com]
+
+ntp:
+  enabled: true
+  required_servers: 2
+
+snmp:
+  enabled: true
+  required_communities: 1
+
+firewall:
+  min_rules: 5
+  anti_scan_protection: true
+  ddos_protection: true
+  wan_input_restricted: true
+
+nat:
+  masquerade_required: true
+
+wifi:
+  check_ssid: true
+  check_2ghz: true
+  check_5ghz: true
+  wifi6_enabled: true
+  required_security: [wpa2-psk, wpa3-psk]
+
+users:
+  required_users: [OXIDIZED, admin-tech]
+  admin_disabled: true
+
+services:
+  enabled: [ssh, winbox, api]
+  disabled: [telnet, ftp, www, api-ssl]
+
+logging:
+  min_actions: 1
+  loki_integration: true
+
+scripts:
+  required_scripts: [msp-healthcheck]
+
+scheduler:
+  required_jobs: [msp-healthcheck]

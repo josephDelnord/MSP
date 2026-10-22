@@ -1,0 +1,11 @@
+# ============================================================
+# Dashboard MSP - Vue d'ensemble
+# ============================================================
+apiVersion: 1
+
+dashboards:
+  - name: MSP - Vue d'ensemble
+    folder: MSP
+    type: file
+    options:
+      path: /etc/grafana/provisioning/dashboards/msp-overview.json

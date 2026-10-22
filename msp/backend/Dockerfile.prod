@@ -1,0 +1,46 @@
+# ============================================================
+# Dockerfile Production - Backend FastAPI
+# Multi-stage build optimisé
+# ============================================================
+
+# Stage 1: Build
+FROM python:3.11-slim as builder
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+# Stage 2: Production
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Créer un utilisateur non-root
+RUN groupadd -r msp && useradd -r -g msp msp
+
+# Copier les dépendances depuis le builder
+COPY --from=builder /root/.local /home/msp/.local
+ENV PATH=/home/msp/.local/bin:$PATH
+
+# Copier le code source
+COPY --chown=msp:msp ./app /app/app
+
+# Créer les dossiers nécessaires
+RUN mkdir -p /app/templates /app/logs && chown -R msp:msp /app
+
+USER msp
+
+EXPOSE 8000
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+
+# Démarrage avec Gunicorn (production)
+CMD ["gunicorn", "app.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info"]

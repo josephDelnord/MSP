@@ -1,0 +1,128 @@
+{
+  "dashboard": {
+    "title": "MSP - Vue d'ensemble",
+    "tags": ["msp", "mikrotik"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Routeurs totaux",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+        "targets": [
+          {
+            "expr": "msp_routers_total",
+            "legendFormat": "Total"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Routeurs en ligne",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+        "targets": [
+          {
+            "expr": "msp_routers_online",
+            "legendFormat": "En ligne"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Routeurs hors ligne",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+        "targets": [
+          {
+            "expr": "msp_routers_offline",
+            "legendFormat": "Hors ligne"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Alertes actives",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+        "targets": [
+          {
+            "expr": "msp_alerts_active",
+            "legendFormat": "Actives"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Score de conformité moyen",
+        "type": "gauge",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+        "targets": [
+          {
+            "expr": "avg(msp_router_compliance_score)",
+            "legendFormat": "Score moyen"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "red", "value": null },
+                { "color": "yellow", "value": 70 },
+                { "color": "green", "value": 95 }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Requêtes API par minute",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[1m])",
+            "legendFormat": "{{method}} {{path}}"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Temps de réponse API",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "p95"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "p50"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Audits par statut",
+        "type": "piechart",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+        "targets": [
+          {
+            "expr": "sum by (status) (msp_audits_total)",
+            "legendFormat": "{{status}}"
+          }
+        ]
+      }
+    ],
+    "refresh": "30s",
+    "time": { "from": "now-1h", "to": "now" },
+    "timepicker": {},
+    "templating": { "list": [] },
+    "uid": "msp-overview"
+  }
+}

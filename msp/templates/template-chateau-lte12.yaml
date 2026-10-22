@@ -1,0 +1,87 @@
+# ============================================================
+# Template de conformité YAML pour Mikrotik Chateau LTE12
+# ============================================================
+name: template-chateau-lte12
+model: Chateau LTE12
+description: Template de conformité pour Mikrotik Chateau LTE12 (4G/LTE)
+
+versions:
+  routeros_min_version: "7.10"
+  routeros_target_version: "7.15.3"
+  firmware_required: true
+  lte_firmware_required: true
+
+interfaces:
+  required: [bridge-lan, ether2, ether3, ether4, lte1]
+  wan_interfaces: [ether1, lte1]
+
+pppoe:
+  required: true
+  route_distance_min: 1
+  route_distance_max: 20
+  check_internet: true
+
+lte:
+  required: true
+  route_distance: 21
+  check_modem_detected: true
+  check_connection_active: true
+  check_route_present: true
+  check_apn_configured: true
+
+wan:
+  primary: pppoe
+  backup: lte
+  check_failover: true
+
+dhcp:
+  required_servers: 1
+  interface: bridge-lan
+
+dns:
+  allow_remote_requests: true
+  required_servers: ["1.1.1.1", "8.8.8.8"]
+  test_domains: [google.com, microsoft.com, webex.com]
+
+ntp:
+  enabled: true
+  required_servers: 2
+
+snmp:
+  enabled: true
+  required_communities: 1
+
+firewall:
+  min_rules: 8
+  anti_scan_protection: true
+  ddos_protection: true
+  wan_input_restricted: true
+  lte_input_restricted: true
+
+nat:
+  masquerade_required: true
+  masquerade_interfaces: [pppoe-out1, lte1]
+
+wifi:
+  check_ssid: true
+  check_2ghz: true
+  check_5ghz: true
+  required_security: [wpa2-psk, wpa3-psk]
+
+users:
+  required_users: [OXIDIZED, admin-tech]
+  admin_disabled: true
+
+services:
+  enabled: [ssh, winbox, api]
+  disabled: [telnet, ftp, www, api-ssl]
+
+logging:
+  min_actions: 1
+  loki_integration: true
+
+scripts:
+  required_scripts: [msp-healthcheck]
+
+scheduler:
+  required_jobs: [msp-healthcheck]

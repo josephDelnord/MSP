@@ -1,0 +1,217 @@
+# ============================================================
+# Template de conformité YAML pour Mikrotik hAP ac²
+# Utilisé par le moteur de conformité MSP
+# ============================================================
+name: template-hap-ac2
+model: hAP ac²
+description: Template de conformité pour Mikrotik hAP ac²
+
+# ---------------------------------------------------------------
+# Versions
+# ---------------------------------------------------------------
+versions:
+  routeros_min_version: "7.10"
+  routeros_target_version: "7.15.3"
+  firmware_required: true
+  lte_firmware_required: false
+
+# ---------------------------------------------------------------
+# Interfaces requises
+# ---------------------------------------------------------------
+interfaces:
+  required:
+    - bridge-lan
+    - ether2
+    - ether3
+    - ether4
+    - ether5
+  wan_interface: ether1
+  lan_bridge: bridge-lan
+
+# ---------------------------------------------------------------
+# PPPoE
+# ---------------------------------------------------------------
+pppoe:
+  required: true
+  max_active: 1
+  min_active: 1
+  route_distance_min: 1
+  route_distance_max: 20
+  check_login_configured: true
+  check_connection_active: true
+  check_public_ip: true
+  check_default_route: true
+  check_wan_list_membership: true
+  check_internet_connectivity: true
+  check_dns_resolution: true
+  ignore_interface_names: [pppoe-out1, pppoe-out2, pppoe-out3, pppoe-out4]
+
+# ---------------------------------------------------------------
+# LTE
+# ---------------------------------------------------------------
+lte:
+  required: false
+  route_distance: 21
+  check_modem_detected: true
+  check_connection_active: true
+  check_route_present: true
+
+# ---------------------------------------------------------------
+# WAN
+# ---------------------------------------------------------------
+wan:
+  check_pppoe_connected: true
+  check_public_ip: true
+  check_default_route: true
+  check_internet: true
+  check_dns: true
+  result_states: [WAN opérationnel, WAN indisponible]
+
+# ---------------------------------------------------------------
+# DHCP
+# ---------------------------------------------------------------
+dhcp:
+  required_servers: 1
+  check_pools: true
+  check_networks: true
+  check_gateways: true
+  check_dns_servers: true
+  interface: bridge-lan
+
+# ---------------------------------------------------------------
+# DNS
+# ---------------------------------------------------------------
+dns:
+  allow_remote_requests: true
+  required_servers:
+    - "1.1.1.1"
+    - "8.8.8.8"
+  test_domains:
+    - google.com
+    - microsoft.com
+    - webex.com
+  result_states: [DNS fonctionnel, DNS KO]
+
+# ---------------------------------------------------------------
+# NTP
+# ---------------------------------------------------------------
+ntp:
+  enabled: true
+  required_servers: 2
+  mode: unicast
+
+# ---------------------------------------------------------------
+# SNMP
+# ---------------------------------------------------------------
+snmp:
+  enabled: true
+  required_communities: 1
+  community_name: msp-monitoring
+  check_traps: false
+  version: v2c
+
+# ---------------------------------------------------------------
+# Firewall
+# ---------------------------------------------------------------
+firewall:
+  min_rules: 10
+  check_rule_order: true
+  required_chains: [input, forward]
+  anti_scan_protection: true
+  ddos_protection: true
+  wan_input_restricted: true
+  required_comments:
+    - Accept established
+    - Drop invalid
+    - Accept LAN
+    - Drop WAN input
+    - Masquerade WAN
+
+# ---------------------------------------------------------------
+# NAT
+# ---------------------------------------------------------------
+nat:
+  masquerade_required: true
+  out_interface: pppoe-out1
+
+# ---------------------------------------------------------------
+# WiFi
+# ---------------------------------------------------------------
+wifi:
+  check_ssid: true
+  check_2ghz: true
+  check_5ghz: true
+  check_security: true
+  required_security: [wpa2-psk, wpa3-psk]
+  check_interfaces_enabled: true
+
+# ---------------------------------------------------------------
+# Utilisateurs
+# ---------------------------------------------------------------
+users:
+  required_users:
+    - OXIDIZED
+    - admin-tech
+  required_groups:
+    OXIDIZED: read
+    admin-tech: full
+  admin_disabled: true
+  check_permissions: true
+
+# ---------------------------------------------------------------
+# Services RouterOS
+# ---------------------------------------------------------------
+services:
+  enabled:
+    - ssh
+    - winbox
+    - api
+  disabled:
+    - telnet
+    - ftp
+    - www
+    - api-ssl
+  check_source_restrictions: true
+
+# ---------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------
+logging:
+  min_actions: 1
+  loki_integration: true
+  syslog_integration: false
+  required_topics: [info, warning, error, critical]
+
+# ---------------------------------------------------------------
+# Scripts
+# ---------------------------------------------------------------
+scripts:
+  required_scripts:
+    - msp-healthcheck
+
+# ---------------------------------------------------------------
+# Scheduler
+# ---------------------------------------------------------------
+scheduler:
+  required_jobs:
+    - msp-healthcheck
+  min_interval: 300
+
+# ---------------------------------------------------------------
+# Classification des anomalies
+# ---------------------------------------------------------------
+anomaly_classification:
+  compliant: "✅ Conforme"
+  missing: "⚠️ Configuration absente"
+  partial: "⚠️ Configuration partielle"
+  misconfigured: "❌ Mauvaise configuration"
+
+# ---------------------------------------------------------------
+# Niveaux de criticité
+# ---------------------------------------------------------------
+severity_levels:
+  info: "Information"
+  low: "Faible"
+  medium: "Moyenne"
+  high: "Élevée"
+  critical: "Critique"
